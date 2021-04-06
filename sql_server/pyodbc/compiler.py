@@ -277,15 +277,16 @@ class SQLCompiler(compiler.SQLCompiler):
                     result.append('WHERE %s' % where)
                     params.extend(w_params)
 
-                grouping = []
-                for g_sql, g_params in group_by:
-                    grouping.append(g_sql)
-                    params.extend(g_params)
-                if grouping:
-                    if distinct_fields:
-                        raise NotImplementedError('annotate() + distinct(fields) is not implemented.')
-                    order_by = order_by or self.connection.ops.force_no_ordering()
-                    result.append('GROUP BY %s' % ', '.join(grouping))
+                if not self.query.subquery:
+                    grouping = []
+                    for g_sql, g_params in group_by:
+                        grouping.append(g_sql)
+                        params.extend(g_params)
+                    if grouping:
+                        if distinct_fields:
+                            raise NotImplementedError('annotate() + distinct(fields) is not implemented.')
+                        order_by = order_by or self.connection.ops.force_no_ordering()
+                        result.append('GROUP BY %s' % ', '.join(grouping))
 
                 if having:
                     result.append('HAVING %s' % having)
