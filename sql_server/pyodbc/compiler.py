@@ -191,6 +191,7 @@ class SQLCompiler(compiler.SQLCompiler):
                 params = []
                 result = ['SELECT']
 
+                is_count = False
                 if self.query.distinct:
                     distinct_result, distinct_params = self.connection.ops.distinct_sql(
                         distinct_fields,
@@ -198,6 +199,8 @@ class SQLCompiler(compiler.SQLCompiler):
                     )
                     result += distinct_result
                     params += distinct_params
+                    if distinct_result == "COUNT_BIG" or distinct_result == "COUNT":
+                        is_count = True
 
                 # SQL Server requires the keword for limitting at the begenning
                 if do_limit and not do_offset:
@@ -277,7 +280,7 @@ class SQLCompiler(compiler.SQLCompiler):
                     result.append('WHERE %s' % where)
                     params.extend(w_params)
 
-                if not self.query.subquery:
+                if not (self.query.subquery and is_count):
                     grouping = []
                     for g_sql, g_params in group_by:
                         grouping.append(g_sql)
